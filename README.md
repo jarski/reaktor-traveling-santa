@@ -20,9 +20,25 @@ This is a capacitated vehicle routing problem (CVRP) with 10,000 customers, too 
 exact methods. Two numbers frame it:
 
 - Total demand is 5,308 t, so at least **531 trips** are needed. Good solutions use 533.
-- Every gram has to go out and come back, so `2 · Σ dᵢwᵢ / Q` = **7,167,812,591 m** is a
-  lower bound. The best solutions sit about 6% above it. Radial travel dominates, so
-  packing the sleigh full matters more than the order of stops within a trip.
+- There is a simple lower bound on the total distance:
+
+  ```
+  LB = 2 · Σᵢ dᵢ · wᵢ / Q  =  7,167,812,591 m
+  ```
+
+  where `dᵢ` is the great-circle distance from Korvatunturi to child `i`, `wᵢ` is the
+  weight of child `i`'s present, and `Q` = 10,000,000 g is the sleigh's capacity.
+
+  Why it holds: a trip has to reach its farthest child and come back, so it is at
+  least `2 · max dᵢ` long. A weighted average never exceeds the maximum, and the trip
+  carries at most `Q`, so `max dᵢ ≥ Σ dᵢwᵢ / Σ wᵢ ≥ Σ dᵢwᵢ / Q` over the trip's children.
+  Adding this up over all trips gives `LB`. Put simply, every gram has to be flown out to
+  its child and the sleigh has to come back, and one trip can share that cost among at
+  most 10 t.
+
+  The best solutions sit about 6% above the bound. Most of the distance is the radial
+  flight out and back, so packing the sleigh full matters more than the order of stops
+  within a trip.
 
 ## Results
 
