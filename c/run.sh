@@ -5,9 +5,12 @@
 # santa2 rewrites out/best.csv on every improvement, so the run can be
 # interrupted at any point and the file on disk is a complete, valid solution.
 set -eu
-cd "$(dirname "$0")"
 SECS=${1:-600}
 SEED=${2:-}
+if [ -n "$SEED" ]; then
+    SEED=$(cd "$(dirname "$SEED")" && pwd)/$(basename "$SEED")
+fi
+cd "$(dirname "$0")"
 THREADS=${THREADS:-$(getconf _NPROCESSORS_ONLN)}
 mkdir -p out
 SANTA_T0=${SANTA_T0:-500} SANTA_T1=${SANTA_T1:-1.0} SANTA_ROUND=${SANTA_ROUND:-10} \
