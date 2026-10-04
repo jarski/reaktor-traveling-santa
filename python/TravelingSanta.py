@@ -166,6 +166,7 @@ def readPoints():
     return points
 
 def saveBest(giftRun):
+    os.makedirs("results", exist_ok=True)
     fileName = "results/"+str(giftRun.totalDistance) +".txt"
     file = open(fileName, "w+")
     file.write(str(giftRun))
@@ -174,6 +175,9 @@ def saveBest(giftRun):
 def loadBest():
     best = ""
     bestDistance = sys.float_info.max
+    if not os.path.isdir("./results/"):
+        print("no results/ directory, starting from scratch")
+        return
     for root, dirs, files in os.walk("./results/"):
         for filename in files:
             distance = float(os.path.splitext(filename)[0])
@@ -202,8 +206,11 @@ def updatePheromone(pheromone, giftRuns):
             pheromone[lastIndex, KORVATUNTURI.index] += 1 / (giftRun.totalDistance / 9000000)
     return pheromone
 
-def optimize(points, capacity, allDistances):
+def optimize(points, capacity, allDistances, iterations=1000):
     bestGiftRun = loadBest()
+    if bestGiftRun is None:
+        bestGiftRun = GiftRun()  # empty seed: deposits no pheromone
+        bestGiftRun.totalDistance = math.inf
     iterGiftRuns = []
     attractiveness = 1 / allDistances
     pheromone = np.ones(allDistances.shape)
@@ -214,13 +221,14 @@ def optimize(points, capacity, allDistances):
         iterGiftRuns.append(bestGiftRun)
 
     start = timer()
-    for i in range(1000): # 30*4 = 120 ants, takes ~10mins
+    for i in range(iterations): # 30*4 = 120 ants, takes ~10mins
         pheromone = updatePheromone(pheromone, iterGiftRuns)
         print('pheromone updated - max: '+str(np.max(pheromone))+', min: '+str(np.min(pheromone)))
         #print(pheromone)
-        with open('pheromone.pickle', 'wb') as f:
-            pickle.dump(pheromone, f)
-        print('pheromone saved')
+        if os.environ.get("SAVE_PHEROMONE"):  # 800 MB per iteration
+            with open('pheromone.pickle', 'wb') as f:
+                pickle.dump(pheromone, f)
+            print('pheromone saved')
         queue = multiprocessing.Queue()
         jobs = []
         for j in range(n):
@@ -245,7 +253,7 @@ def optimize(points, capacity, allDistances):
     return bestGiftRun
 
 
-def solve():
+def solve(iterations=1000):
     points = readPoints()
     allDistances = calculateAllDistances(points)
-    optimize(points, 10000000, allDistances)
+    return optimize(points, 10000000, allDistances, iterations)
