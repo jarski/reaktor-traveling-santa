@@ -1,0 +1,19 @@
+# Challenge data belongs to Reaktor; fetch it with tools/fetch_data.sh
+nicelist.txt
+data/
+
+# Solver output
+results/
+out/
+*.csv
+*.log
+*.pickle
+*.bin
+
+# Build artefacts
+rust/target/
+c/santa
+c/santa2
+__pycache__/
+.venv/
+.DS_Store
